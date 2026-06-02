@@ -4,18 +4,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="dark" />
-    <title>Neon Orbit · Live Pages</title>
+    <title>Neon Orbit · Weird Music Visualizer</title>
     <style>
       :root {
         --bg1: #050816;
         --bg2: #0b1230;
-        --card: rgba(12, 18, 42, 0.72);
+        --card: rgba(10, 16, 34, 0.66);
         --stroke: rgba(255, 255, 255, 0.12);
         --text: #eef3ff;
         --muted: #9fb0df;
         --accent: #7c5cff;
         --accent2: #35d3ff;
-        --good: #5df1a6;
+        --accent3: #5df1a6;
         --warn: #ffd36b;
       }
 
@@ -32,6 +32,14 @@
         overflow: hidden;
       }
 
+      canvas#viz {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+
       body::before,
       body::after {
         content: "";
@@ -45,12 +53,12 @@
           radial-gradient(circle at 85% 68%, rgba(255,255,255,0.08) 0 1px, transparent 1.4px);
         background-size: 240px 240px, 320px 320px, 280px 280px, 360px 360px;
         animation: drift 28s linear infinite;
-        opacity: 0.45;
+        opacity: 0.35;
       }
 
       body::after {
         filter: blur(4px);
-        opacity: 0.2;
+        opacity: 0.18;
         animation-duration: 42s;
         transform: scale(1.15);
       }
@@ -61,6 +69,7 @@
       }
 
       .wrap {
+        position: relative;
         min-height: 100%;
         display: grid;
         place-items: center;
@@ -68,10 +77,10 @@
       }
 
       .card {
-        width: min(980px, 100%);
+        width: min(1100px, 100%);
         border: 1px solid var(--stroke);
         background: var(--card);
-        backdrop-filter: blur(20px);
+        backdrop-filter: blur(22px);
         border-radius: 28px;
         box-shadow: 0 24px 90px rgba(0,0,0,0.45);
         overflow: hidden;
@@ -86,11 +95,12 @@
         border-radius: 50%;
         background: radial-gradient(circle, rgba(124,92,255,0.45), transparent 65%);
         filter: blur(10px);
+        pointer-events: none;
       }
 
       .hero {
         display: grid;
-        grid-template-columns: 1.4fr 0.9fr;
+        grid-template-columns: 1.2fr 1fr;
         gap: 0;
       }
 
@@ -119,15 +129,15 @@
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: var(--good);
-        box-shadow: 0 0 18px var(--good);
+        background: var(--accent3);
+        box-shadow: 0 0 18px var(--accent3);
       }
 
       h1 {
         margin: 18px 0 10px;
-        font-size: clamp(2.4rem, 5vw, 5rem);
-        line-height: 0.95;
-        letter-spacing: -0.06em;
+        font-size: clamp(2.5rem, 5vw, 5.4rem);
+        line-height: 0.92;
+        letter-spacing: -0.07em;
       }
 
       .gradient {
@@ -139,7 +149,7 @@
 
       .subtitle {
         margin: 0;
-        max-width: 56ch;
+        max-width: 58ch;
         color: var(--muted);
         font-size: 1.05rem;
         line-height: 1.65;
@@ -215,6 +225,41 @@
         font-size: 14px;
       }
 
+      .controls {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 22px;
+      }
+
+      button {
+        appearance: none;
+        border: 0;
+        cursor: pointer;
+        padding: 14px 18px;
+        border-radius: 16px;
+        color: white;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        background: linear-gradient(135deg, #7c5cff, #35d3ff);
+        box-shadow: 0 14px 40px rgba(53, 211, 255, 0.25);
+        transition: transform 120ms ease, filter 120ms ease;
+      }
+
+      button:hover { transform: translateY(-1px); filter: brightness(1.06); }
+      button:active { transform: translateY(1px) scale(0.99); }
+
+      .ghost {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.10);
+        box-shadow: none;
+      }
+
+      .status {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
       .pulse {
         animation: pulse 1s ease;
       }
@@ -225,7 +270,35 @@
         100% { transform: scale(1); }
       }
 
-      @media (max-width: 860px) {
+      .hint {
+        margin-top: 14px;
+        color: #c6d3ff;
+        font-size: 13px;
+        line-height: 1.5;
+        opacity: 0.85;
+      }
+
+      .record {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .record i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #ff5a7a;
+        box-shadow: 0 0 16px rgba(255,90,122,0.9);
+        animation: blink 1.2s infinite;
+      }
+
+      @keyframes blink {
+        0%, 100% { opacity: 0.2; transform: scale(0.9); }
+        50% { opacity: 1; transform: scale(1.1); }
+      }
+
+      @media (max-width: 900px) {
         body { overflow: auto; }
         .hero { grid-template-columns: 1fr; }
         .left { border-right: 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
@@ -233,6 +306,8 @@
     </style>
   </head>
   <body>
+    <canvas id="viz"></canvas>
+
     <main class="wrap">
       <section class="card" id="card">
         <div class="glow"></div>
@@ -241,14 +316,22 @@
             <div class="eyebrow"><span class="dot"></span> Live Pages · Auto-Refresh aktiv</div>
             <h1 class="gradient">Neon Orbit</h1>
             <p class="subtitle">
-              Eine kleine, lebendige GitHub-Pages-Spielwiese: animiert, cool und so gebaut,
-              dass sie neue Versionen selbst erkennt und ohne manuelles Aktualisieren nachlädt.
+              Eine gläserne, seltsam schöne Synästhesie: Browser-Visuals, die auf einen
+              endlos generierten Ambient-Stream reagieren — glitchy, organisch und ein bisschen außerirdisch.
             </p>
             <div class="chips">
               <div class="chip">✨ Glas-UI</div>
-              <div class="chip">⏱ Live-Uhr</div>
+              <div class="chip">🌀 Audio-Reaktiv</div>
               <div class="chip">🔁 Auto-Reload bei Deploy</div>
-              <div class="chip">🚀 GitHub Pages</div>
+              <div class="chip">🎛 Weird Synth Engine</div>
+            </div>
+            <div class="controls">
+              <button id="startBtn">Start weird mode</button>
+              <button id="muteBtn" class="ghost">Audio aus</button>
+            </div>
+            <div class="hint">
+              Hinweis: Browser blocken Autoplay meistens. Ein Klick auf „Start weird mode“ startet die
+              generative Musik und die Animationen. Danach läuft alles automatisch weiter.
             </div>
           </div>
 
@@ -258,6 +341,12 @@
                 <div class="label">Lokale Zeit</div>
                 <div class="value" id="clock">--:--:--</div>
                 <div class="small">Aktualisiert jede Sekunde im Browser.</div>
+              </div>
+
+              <div class="metric">
+                <div class="label">Audio</div>
+                <div class="value" id="audioState"><span class="record"><i></i> waiting</span></div>
+                <div class="small" id="audioMeta">Klicke auf Start, dann erwacht der Synth.</div>
               </div>
 
               <div class="metric">
@@ -285,8 +374,23 @@
         buildMeta: document.getElementById('build-meta'),
         log: document.getElementById('log'),
         card: document.getElementById('card'),
+        audioState: document.getElementById('audioState'),
+        audioMeta: document.getElementById('audioMeta'),
+        startBtn: document.getElementById('startBtn'),
+        muteBtn: document.getElementById('muteBtn'),
+        canvas: document.getElementById('viz'),
+        ctx: null,
+        audio: null,
+        analyser: null,
+        master: null,
+        muted: false,
         version: null,
-        loadedAt: Date.now(),
+        started: false,
+        bins: new Uint8Array(256),
+        energy: 0,
+        particles: [],
+        orbs: [],
+        lastBeatAt: 0,
       };
 
       const messages = [
@@ -295,6 +399,7 @@
         'Auto-Refresh hält die Seite frisch.',
         'Browser prüft im Hintergrund neue Deploys.',
         'Wenn sich etwas ändert, lade ich von selbst neu.',
+        'Die Musik denkt in Wellen und Glitches.',
       ];
 
       function pad(n) { return String(n).padStart(2, '0'); }
@@ -345,7 +450,331 @@
         document.body.dataset.mood = msg;
       }
 
+      function resizeCanvas() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        state.canvas.width = Math.floor(window.innerWidth * dpr);
+        state.canvas.height = Math.floor(window.innerHeight * dpr);
+        state.canvas.style.width = window.innerWidth + 'px';
+        state.canvas.style.height = window.innerHeight + 'px';
+        state.ctx = state.canvas.getContext('2d');
+        state.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      function rand(min, max) { return Math.random() * (max - min) + min; }
+
+      function seedParticles() {
+        state.particles = Array.from({ length: 140 }, () => ({
+          x: rand(0, window.innerWidth),
+          y: rand(0, window.innerHeight),
+          vx: rand(-0.35, 0.35),
+          vy: rand(-0.35, 0.35),
+          r: rand(0.7, 2.2),
+          hue: rand(190, 290),
+        }));
+        state.orbs = Array.from({ length: 8 }, (_, i) => ({
+          angle: (Math.PI * 2 * i) / 8,
+          radius: rand(110, 260),
+          speed: rand(0.002, 0.006),
+          size: rand(10, 24),
+          hue: rand(185, 300),
+        }));
+      }
+
+      function energyFromBins() {
+        const b = state.bins;
+        let bass = 0, mid = 0, treble = 0;
+        for (let i = 0; i < b.length; i++) {
+          const v = b[i] / 255;
+          if (i < 32) bass += v;
+          else if (i < 128) mid += v;
+          else treble += v;
+        }
+        bass /= 32;
+        mid /= 96;
+        treble /= 128;
+        return { bass, mid, treble, total: (bass * 0.55 + mid * 0.30 + treble * 0.15) };
+      }
+
+      function draw() {
+        const ctx = state.ctx;
+        if (!ctx) return;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        if (state.analyser) state.analyser.getByteFrequencyData(state.bins);
+        const energy = state.started ? energyFromBins() : { bass: 0.18, mid: 0.16, treble: 0.14, total: 0.18 };
+        state.energy = state.energy * 0.88 + energy.total * 0.12;
+
+        ctx.clearRect(0, 0, w, h);
+
+        const grad = ctx.createRadialGradient(w * 0.5, h * 0.45, 30, w * 0.5, h * 0.45, Math.max(w, h) * 0.7);
+        grad.addColorStop(0, `rgba(90, 150, 255, ${0.08 + energy.mid * 0.12})`);
+        grad.addColorStop(0.45, `rgba(124, 92, 255, ${0.08 + energy.bass * 0.18})`);
+        grad.addColorStop(1, 'rgba(5, 8, 22, 0.0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        // orbit rings
+        ctx.save();
+        ctx.translate(w * 0.5, h * 0.5);
+        const ringCount = 8;
+        for (let i = 0; i < ringCount; i++) {
+          const t = i / ringCount;
+          const r = 70 + t * 240 + energy.bass * 40;
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(${Math.floor(80 + t * 120)}, ${Math.floor(120 + t * 90)}, 255, ${0.07 + energy.mid * 0.08})`;
+          ctx.lineWidth = 1 + energy.total * 1.7;
+          ctx.setLineDash([8 + t * 12, 18 + t * 10]);
+          ctx.lineDashOffset = performance.now() * -0.02 * (1 + t * 2);
+          ctx.arc(0, 0, r, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+
+        // central core
+        const core = 48 + energy.bass * 90;
+        const pulse = Math.sin(performance.now() * 0.003) * 0.5 + 0.5;
+        const coreGrad = ctx.createRadialGradient(0, 0, 8, 0, 0, core * 2.2);
+        coreGrad.addColorStop(0, `rgba(255,255,255,${0.85})`);
+        coreGrad.addColorStop(0.2, `rgba(93,241,166,${0.36 + energy.mid * 0.32})`);
+        coreGrad.addColorStop(0.55, `rgba(53,211,255,${0.18 + energy.total * 0.24})`);
+        coreGrad.addColorStop(1, 'rgba(124,92,255,0)');
+        ctx.fillStyle = coreGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, core * (1.2 + pulse * 0.15), 0, Math.PI * 2);
+        ctx.fill();
+
+        // orbiting glyphs
+        state.orbs.forEach((orb, i) => {
+          orb.angle += orb.speed * (0.5 + energy.mid * 2.2);
+          const x = Math.cos(orb.angle) * (orb.radius + energy.bass * 70);
+          const y = Math.sin(orb.angle * 1.2) * (orb.radius * 0.62);
+          const size = orb.size * (0.8 + energy.total * 1.8);
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(orb.angle * 2);
+          ctx.fillStyle = `hsla(${orb.hue + energy.treble * 60}, 100%, 70%, ${0.55 + energy.total * 0.28})`;
+          ctx.shadowColor = `hsla(${orb.hue}, 100%, 70%, 0.85)`;
+          ctx.shadowBlur = 22;
+          ctx.beginPath();
+          ctx.moveTo(0, -size);
+          ctx.lineTo(size * 0.85, 0);
+          ctx.lineTo(0, size);
+          ctx.lineTo(-size * 0.35, 0);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        });
+        ctx.restore();
+
+        // particles
+        for (const p of state.particles) {
+          p.x += p.vx * (1 + energy.mid * 2.8);
+          p.y += p.vy * (1 + energy.mid * 2.8);
+          if (p.x < -20) p.x = w + 20;
+          if (p.x > w + 20) p.x = -20;
+          if (p.y < -20) p.y = h + 20;
+          if (p.y > h + 20) p.y = -20;
+          ctx.beginPath();
+          ctx.fillStyle = `hsla(${p.hue + energy.treble * 50}, 100%, 75%, ${0.22 + energy.total * 0.36})`;
+          ctx.shadowColor = `hsla(${p.hue}, 100%, 70%, 0.8)`;
+          ctx.shadowBlur = 14;
+          ctx.arc(p.x, p.y, p.r + energy.bass * 1.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // connecting lines
+        const maxDist = 130;
+        ctx.shadowBlur = 0;
+        for (let i = 0; i < state.particles.length; i++) {
+          const a = state.particles[i];
+          for (let j = i + 1; j < state.particles.length; j++) {
+            const b = state.particles[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < maxDist) {
+              const alpha = (1 - dist / maxDist) * (0.03 + energy.total * 0.12);
+              ctx.strokeStyle = `rgba(160, 200, 255, ${alpha})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      function updateAudioUI(on) {
+        state.audioState.innerHTML = on ? '<span class="record"><i></i> live</span>' : '<span class="record"><i></i> waiting</span>';
+        state.audioMeta.textContent = on ? 'Der Synth läuft und die Visuals reagieren auf den Klang.' : 'Klicke auf Start, dann erwacht der Synth.';
+      }
+
+      function setMuted(muted) {
+        state.muted = muted;
+        if (state.master) state.master.gain.value = muted ? 0 : 0.22;
+        state.muteBtn.textContent = muted ? 'Audio an' : 'Audio aus';
+      }
+
+      async function startAudio() {
+        if (!state.audio) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          state.audio = new AudioContext();
+
+          const analyser = state.audio.createAnalyser();
+          analyser.fftSize = 512;
+          analyser.smoothingTimeConstant = 0.86;
+          state.analyser = analyser;
+
+          const master = state.audio.createGain();
+          master.gain.value = 0.22;
+          state.master = master;
+          master.connect(analyser);
+          analyser.connect(state.audio.destination);
+
+          const out = master;
+
+          const filter = state.audio.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.value = 900;
+          filter.Q.value = 0.9;
+          filter.connect(out);
+
+          const filter2 = state.audio.createBiquadFilter();
+          filter2.type = 'bandpass';
+          filter2.frequency.value = 520;
+          filter2.Q.value = 2.4;
+          filter2.connect(filter);
+
+          const delay = state.audio.createDelay(0.8);
+          delay.delayTime.value = 0.27;
+          const feedback = state.audio.createGain();
+          feedback.gain.value = 0.28;
+          delay.connect(feedback);
+          feedback.connect(delay);
+          delay.connect(filter2);
+
+          const lfo = state.audio.createOscillator();
+          lfo.type = 'sine';
+          lfo.frequency.value = 0.08;
+          const lfoGain = state.audio.createGain();
+          lfoGain.gain.value = 280;
+          lfo.connect(lfoGain);
+          lfoGain.connect(filter.frequency);
+          lfo.start();
+
+          const lfo2 = state.audio.createOscillator();
+          lfo2.type = 'triangle';
+          lfo2.frequency.value = 0.13;
+          const lfoGain2 = state.audio.createGain();
+          lfoGain2.gain.value = 160;
+          lfo2.connect(lfoGain2);
+          lfoGain2.connect(filter2.frequency);
+          lfo2.start();
+
+          const notes = [55, 62, 65, 73, 82, 98, 110, 123];
+          const beatPattern = [0, 4, 2, 5, 1, 6, 3, 7, 2, 5, 0, 7, 1, 4, 6, 3];
+          const tempo = 82;
+          const beatMs = 60000 / tempo;
+
+          function makeVoice(freq, time, dur, detune = 0) {
+            const osc = state.audio.createOscillator();
+            osc.type = Math.random() > 0.5 ? 'sawtooth' : 'triangle';
+            osc.frequency.setValueAtTime(freq, time);
+            osc.detune.setValueAtTime(detune, time);
+            osc.frequency.exponentialRampToValueAtTime(freq * 0.985, time + dur);
+
+            const amp = state.audio.createGain();
+            amp.gain.setValueAtTime(0.0001, time);
+            amp.gain.exponentialRampToValueAtTime(0.22, time + 0.04);
+            amp.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+
+            osc.connect(amp);
+            amp.connect(filter2);
+            osc.start(time);
+            osc.stop(time + dur + 0.04);
+          }
+
+          function makeBass(freq, time, dur) {
+            const osc = state.audio.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, time);
+            osc.frequency.exponentialRampToValueAtTime(freq * 0.98, time + dur);
+            const amp = state.audio.createGain();
+            amp.gain.setValueAtTime(0.0001, time);
+            amp.gain.exponentialRampToValueAtTime(0.38, time + 0.03);
+            amp.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+            osc.connect(amp);
+            amp.connect(filter);
+            osc.start(time);
+            osc.stop(time + dur + 0.03);
+          }
+
+          function makeNoiseHit(time, intensity = 0.18) {
+            const buffer = state.audio.createBuffer(1, state.audio.sampleRate * 0.12, state.audio.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < data.length; i++) {
+              data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2.6);
+            }
+            const src = state.audio.createBufferSource();
+            src.buffer = buffer;
+            const amp = state.audio.createGain();
+            amp.gain.value = intensity;
+            const hp = state.audio.createBiquadFilter();
+            hp.type = 'highpass';
+            hp.frequency.value = 1200;
+            src.connect(hp);
+            hp.connect(amp);
+            amp.connect(delay);
+            src.start(time);
+          }
+
+          let step = 0;
+          function schedule() {
+            if (!state.audio) return;
+            const now = state.audio.currentTime;
+            const ahead = now + 1.4;
+            for (let t = now + 0.05; t < ahead; t += beatMs / 1000) {
+              const idx = beatPattern[step % beatPattern.length];
+              const root = notes[(step + idx) % notes.length];
+              const bass = [27.5, 30.87, 32.7, 36.7][step % 4];
+              makeBass(bass, t, 0.44 + (step % 3) * 0.08);
+              makeVoice(root, t + 0.02, 0.23 + (step % 4) * 0.02, rand(-9, 9));
+              if (step % 2 === 0) makeVoice(root * 1.5, t + 0.08, 0.14, rand(-12, 12));
+              if (step % 4 === 0) makeNoiseHit(t + 0.01, 0.14 + (step % 5) * 0.02);
+              step++;
+            }
+            setTimeout(schedule, 260);
+          }
+          schedule();
+        }
+
+        if (state.audio.state === 'suspended') await state.audio.resume();
+        state.started = true;
+        updateAudioUI(true);
+        setLog('Weird mode ist an. Der Synth läuft endlos und die Visuals atmen mit dem Klang.');
+        setMuted(state.muted);
+      }
+
+      state.startBtn.addEventListener('click', startAudio);
+      state.muteBtn.addEventListener('click', () => setMuted(!state.muted));
+      window.addEventListener('pointerdown', () => {
+        if (!state.started) startAudio();
+      }, { once: true });
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+        seedParticles();
+      });
+
       updateClock();
+      resizeCanvas();
+      seedParticles();
+      updateAudioUI(false);
+      setMuted(false);
+      draw();
       setInterval(updateClock, 1000);
       checkVersion();
       setInterval(checkVersion, 15000);
