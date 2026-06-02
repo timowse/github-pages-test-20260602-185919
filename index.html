@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="dark" />
-    <title>Neon Orbit · KI Ambient Music</title>
+    <title>Neon Orbit · KI LoFi Ambience</title>
     <style>
       :root {
         --bg1: #050816;
@@ -317,13 +317,13 @@
             <h1 class="gradient">Neon Orbit</h1>
             <p class="subtitle">
               Eine gläserne Synästhesie: Browser-Visuals, die auf eine endlos generierte
-              KI-/Ambient-Atmosphäre reagieren — weich, lebendig und hypnotisch.
+              KI-LoFi-Atmosphäre reagieren — weich, warm und hypnotisch.
             </p>
             <div class="chips">
               <div class="chip">✨ Glas-UI</div>
               <div class="chip">🌀 Audio-Reaktiv</div>
               <div class="chip">🔁 Auto-Reload bei Deploy</div>
-              <div class="chip">🎛 KI Ambient Engine</div>
+              <div class="chip">🎛 KI LoFi Engine</div>
             </div>
             <div class="controls">
               <button id="startBtn">Start KI-Musik</button>
@@ -331,7 +331,7 @@
             </div>
             <div class="hint">
               Hinweis: Browser blocken Autoplay meistens. Ein Klick auf „Start KI-Musik“ startet die
-              generative Hintergrundmusik und die Animationen. Danach läuft alles automatisch weiter.
+              generative LoFi-Hintergrundmusik und die Animationen. Danach läuft alles automatisch weiter.
             </div>
           </div>
 
@@ -630,7 +630,7 @@
           state.analyser = analyser;
 
           const master = state.audio.createGain();
-          master.gain.value = 0.22;
+          master.gain.value = 0.18;
           state.master = master;
           master.connect(analyser);
           analyser.connect(state.audio.destination);
@@ -639,20 +639,27 @@
 
           const filter = state.audio.createBiquadFilter();
           filter.type = 'lowpass';
-          filter.frequency.value = 900;
-          filter.Q.value = 0.9;
-          filter.connect(out);
+          filter.frequency.value = 650;
+          filter.Q.value = 0.7;
+          const compressor = state.audio.createDynamicsCompressor();
+          compressor.threshold.value = -28;
+          compressor.knee.value = 22;
+          compressor.ratio.value = 4.5;
+          compressor.attack.value = 0.004;
+          compressor.release.value = 0.18;
+          filter.connect(compressor);
+          compressor.connect(out);
 
           const filter2 = state.audio.createBiquadFilter();
           filter2.type = 'bandpass';
-          filter2.frequency.value = 520;
-          filter2.Q.value = 2.4;
+          filter2.frequency.value = 280;
+          filter2.Q.value = 1.2;
           filter2.connect(filter);
 
           const delay = state.audio.createDelay(0.8);
-          delay.delayTime.value = 0.27;
+          delay.delayTime.value = 0.31;
           const feedback = state.audio.createGain();
-          feedback.gain.value = 0.28;
+          feedback.gain.value = 0.21;
           delay.connect(feedback);
           feedback.connect(delay);
           delay.connect(filter2);
@@ -675,21 +682,40 @@
           lfoGain2.connect(filter2.frequency);
           lfo2.start();
 
-          const notes = [55, 62, 65, 73, 82, 98, 110, 123];
-          const beatPattern = [0, 4, 2, 5, 1, 6, 3, 7, 2, 5, 0, 7, 1, 4, 6, 3];
-          const tempo = 82;
+          const vinyl = state.audio.createBuffer(1, state.audio.sampleRate * 2, state.audio.sampleRate);
+          const vdata = vinyl.getChannelData(0);
+          for (let i = 0; i < vdata.length; i++) {
+            const envelope = Math.pow(1 - Math.abs((i / vdata.length) * 2 - 1), 0.45);
+            vdata[i] = (Math.random() * 2 - 1) * envelope * 0.18;
+          }
+          const vinylSrc = state.audio.createBufferSource();
+          vinylSrc.buffer = vinyl;
+          vinylSrc.loop = true;
+          const vinylFilter = state.audio.createBiquadFilter();
+          vinylFilter.type = 'lowpass';
+          vinylFilter.frequency.value = 1800;
+          const vinylAmp = state.audio.createGain();
+          vinylAmp.gain.value = 0.035;
+          vinylSrc.connect(vinylFilter);
+          vinylFilter.connect(vinylAmp);
+          vinylAmp.connect(delay);
+          vinylSrc.start();
+
+          const notes = [55, 62, 65, 73, 82, 92, 98, 110];
+          const beatPattern = [0, 2, 4, 1, 5, 3, 6, 2, 4, 7, 1, 5];
+          const tempo = 72;
           const beatMs = 60000 / tempo;
 
           function makeVoice(freq, time, dur, detune = 0) {
             const osc = state.audio.createOscillator();
-            osc.type = Math.random() > 0.5 ? 'sawtooth' : 'triangle';
+            osc.type = Math.random() > 0.75 ? 'sine' : 'triangle';
             osc.frequency.setValueAtTime(freq, time);
-            osc.detune.setValueAtTime(detune, time);
-            osc.frequency.exponentialRampToValueAtTime(freq * 0.985, time + dur);
+            osc.detune.setValueAtTime(detune * 0.5, time);
+            osc.frequency.exponentialRampToValueAtTime(freq * 0.992, time + dur);
 
             const amp = state.audio.createGain();
             amp.gain.setValueAtTime(0.0001, time);
-            amp.gain.exponentialRampToValueAtTime(0.22, time + 0.04);
+            amp.gain.exponentialRampToValueAtTime(0.16, time + 0.05);
             amp.gain.exponentialRampToValueAtTime(0.0001, time + dur);
 
             osc.connect(amp);
@@ -702,10 +728,10 @@
             const osc = state.audio.createOscillator();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(freq, time);
-            osc.frequency.exponentialRampToValueAtTime(freq * 0.98, time + dur);
+            osc.frequency.exponentialRampToValueAtTime(freq * 0.985, time + dur);
             const amp = state.audio.createGain();
             amp.gain.setValueAtTime(0.0001, time);
-            amp.gain.exponentialRampToValueAtTime(0.38, time + 0.03);
+            amp.gain.exponentialRampToValueAtTime(0.28, time + 0.03);
             amp.gain.exponentialRampToValueAtTime(0.0001, time + dur);
             osc.connect(amp);
             amp.connect(filter);
@@ -717,15 +743,15 @@
             const buffer = state.audio.createBuffer(1, state.audio.sampleRate * 0.12, state.audio.sampleRate);
             const data = buffer.getChannelData(0);
             for (let i = 0; i < data.length; i++) {
-              data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2.6);
+              data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 3.2);
             }
             const src = state.audio.createBufferSource();
             src.buffer = buffer;
             const amp = state.audio.createGain();
-            amp.gain.value = intensity;
+            amp.gain.value = intensity * 0.65;
             const hp = state.audio.createBiquadFilter();
             hp.type = 'highpass';
-            hp.frequency.value = 1200;
+            hp.frequency.value = 850;
             src.connect(hp);
             hp.connect(amp);
             amp.connect(delay);
@@ -736,18 +762,19 @@
           function schedule() {
             if (!state.audio) return;
             const now = state.audio.currentTime;
-            const ahead = now + 1.4;
+            const ahead = now + 1.8;
             for (let t = now + 0.05; t < ahead; t += beatMs / 1000) {
               const idx = beatPattern[step % beatPattern.length];
               const root = notes[(step + idx) % notes.length];
               const bass = [27.5, 30.87, 32.7, 36.7][step % 4];
-              makeBass(bass, t, 0.44 + (step % 3) * 0.08);
-              makeVoice(root, t + 0.02, 0.23 + (step % 4) * 0.02, rand(-9, 9));
-              if (step % 2 === 0) makeVoice(root * 1.5, t + 0.08, 0.14, rand(-12, 12));
-              if (step % 4 === 0) makeNoiseHit(t + 0.01, 0.14 + (step % 5) * 0.02);
+              const swing = (step % 2 === 0 ? 0.012 : 0.031);
+              makeBass(bass, t + swing * 0.12, 0.52 + (step % 3) * 0.05);
+              makeVoice(root, t + swing, 0.32 + (step % 4) * 0.03, rand(-4, 4));
+              if (step % 3 === 0) makeVoice(root * 1.25, t + 0.11 + swing, 0.18, rand(-5, 5));
+              if (step % 4 === 0) makeNoiseHit(t + 0.015, 0.10 + (step % 5) * 0.01);
               step++;
             }
-            setTimeout(schedule, 260);
+            setTimeout(schedule, 280);
           }
           schedule();
         }
@@ -755,7 +782,7 @@
         if (state.audio.state === 'suspended') await state.audio.resume();
         state.started = true;
         updateAudioUI(true);
-        setLog('KI-Musik ist an. Der Synth läuft endlos und die Visuals atmen mit dem Klang.');
+        setLog('KI-LoFi-Musik ist an. Der Synth läuft endlos und die Visuals atmen mit dem Klang.');
         setMuted(state.muted);
       }
 
