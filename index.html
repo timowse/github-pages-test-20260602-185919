@@ -763,7 +763,7 @@
 
           const filter = state.audio.createBiquadFilter();
           filter.type = 'lowpass';
-          filter.frequency.value = 650;
+          filter.frequency.value = 1450;
           filter.Q.value = 0.7;
           const compressor = state.audio.createDynamicsCompressor();
           compressor.threshold.value = -28;
@@ -776,21 +776,21 @@
 
           const filter2 = state.audio.createBiquadFilter();
           filter2.type = 'bandpass';
-          filter2.frequency.value = 280;
+          filter2.frequency.value = 760;
           filter2.Q.value = 1.2;
           filter2.connect(filter);
 
           const delay = state.audio.createDelay(0.8);
           delay.delayTime.value = 0.31;
           const feedback = state.audio.createGain();
-          feedback.gain.value = 0.21;
+          feedback.gain.value = 0.14;
           delay.connect(feedback);
           feedback.connect(delay);
           delay.connect(filter2);
 
           const lfo = state.audio.createOscillator();
           lfo.type = 'sine';
-          lfo.frequency.value = 0.08;
+          lfo.frequency.value = 0.11;
           const lfoGain = state.audio.createGain();
           lfoGain.gain.value = 280;
           lfo.connect(lfoGain);
@@ -799,7 +799,7 @@
 
           const lfo2 = state.audio.createOscillator();
           lfo2.type = 'triangle';
-          lfo2.frequency.value = 0.13;
+          lfo2.frequency.value = 0.19;
           const lfoGain2 = state.audio.createGain();
           lfoGain2.gain.value = 160;
           lfo2.connect(lfoGain2);
@@ -825,21 +825,27 @@
           vinylAmp.connect(delay);
           vinylSrc.start();
 
-          const notes = [55, 62, 65, 73, 82, 92, 98, 110];
-          const beatPattern = [0, 2, 4, 1, 5, 3, 6, 2, 4, 7, 1, 5];
-          const tempo = 72;
+          const roots = [174.61, 196, 220, 246.94, 261.63, 293.66, 329.63];
+          const phrases = [
+            [0, 2, 4, 7, 9, 7, 4, 2],
+            [0, 3, 5, 7, 10, 7, 5, 3],
+            [0, 2, 5, 7, 9, 11, 9, 7],
+            [0, 4, 7, 9, 7, 4, 2, 0],
+          ];
+          const bassRoots = [110, 123.47, 130.81, 146.83, 164.81];
+          const tempo = 84;
           const beatMs = 60000 / tempo;
 
           function makeVoice(freq, time, dur, detune = 0) {
             const osc = state.audio.createOscillator();
-            osc.type = Math.random() > 0.75 ? 'sine' : 'triangle';
+            osc.type = ['sine', 'triangle', 'sawtooth'][Math.floor(Math.random() * 3)];
             osc.frequency.setValueAtTime(freq, time);
-            osc.detune.setValueAtTime(detune * 0.5, time);
-            osc.frequency.exponentialRampToValueAtTime(freq * 0.992, time + dur);
+            osc.detune.setValueAtTime(detune * 0.7, time);
+            osc.frequency.exponentialRampToValueAtTime(freq * rand(0.985, 1.01), time + dur);
 
             const amp = state.audio.createGain();
             amp.gain.setValueAtTime(0.0001, time);
-            amp.gain.exponentialRampToValueAtTime(0.16, time + 0.05);
+            amp.gain.exponentialRampToValueAtTime(rand(0.08, 0.14), time + 0.05);
             amp.gain.exponentialRampToValueAtTime(0.0001, time + dur);
 
             osc.connect(amp);
@@ -848,17 +854,17 @@
             osc.stop(time + dur + 0.04);
           }
 
-          function makeBass(freq, time, dur) {
+          function makePulse(freq, time, dur) {
             const osc = state.audio.createOscillator();
-            osc.type = 'sine';
+            osc.type = Math.random() > 0.5 ? 'triangle' : 'sine';
             osc.frequency.setValueAtTime(freq, time);
-            osc.frequency.exponentialRampToValueAtTime(freq * 0.985, time + dur);
+            osc.frequency.exponentialRampToValueAtTime(freq * rand(0.992, 1.01), time + dur);
             const amp = state.audio.createGain();
             amp.gain.setValueAtTime(0.0001, time);
-            amp.gain.exponentialRampToValueAtTime(0.28, time + 0.03);
+            amp.gain.exponentialRampToValueAtTime(0.13, time + 0.03);
             amp.gain.exponentialRampToValueAtTime(0.0001, time + dur);
             osc.connect(amp);
-            amp.connect(filter);
+            amp.connect(filter2);
             osc.start(time);
             osc.stop(time + dur + 0.03);
           }
@@ -883,22 +889,33 @@
           }
 
           let step = 0;
+          let phrase = phrases[Math.floor(Math.random() * phrases.length)];
+          let phraseRoot = roots[Math.floor(Math.random() * roots.length)];
+          let phraseLift = Math.floor(Math.random() * 4);
+
           function schedule() {
             if (!state.audio) return;
             const now = state.audio.currentTime;
             const ahead = now + 1.8;
+            if (step % 8 === 0) {
+              phrase = phrases[Math.floor(Math.random() * phrases.length)];
+              phraseRoot = roots[Math.floor(Math.random() * roots.length)];
+              phraseLift = Math.floor(Math.random() * 4);
+            }
             for (let t = now + 0.05; t < ahead; t += beatMs / 1000) {
-              const idx = beatPattern[step % beatPattern.length];
-              const root = notes[(step + idx) % notes.length];
-              const bass = [27.5, 30.87, 32.7, 36.7][step % 4];
-              const swing = (step % 2 === 0 ? 0.012 : 0.031);
-              makeBass(bass, t + swing * 0.12, 0.52 + (step % 3) * 0.05);
-              makeVoice(root, t + swing, 0.32 + (step % 4) * 0.03, rand(-4, 4));
-              if (step % 3 === 0) makeVoice(root * 1.25, t + 0.11 + swing, 0.18, rand(-5, 5));
-              if (step % 4 === 0) makeNoiseHit(t + 0.015, 0.10 + (step % 5) * 0.01);
+              const degree = phrase[(step + phraseLift) % phrase.length];
+              const lead = phraseRoot * Math.pow(2, degree / 12);
+              const harmony = phraseRoot * Math.pow(2, (degree + ([0, 3, 7][step % 3])) / 12);
+              const pulse = bassRoots[(step + Math.floor(Math.random() * 3)) % bassRoots.length];
+              const swing = (step % 2 === 0 ? 0.01 : 0.04) + rand(-0.004, 0.004);
+              makePulse(pulse, t + swing * 0.1, 0.34 + (step % 3) * 0.06);
+              makeVoice(lead, t + swing, 0.22 + (step % 4) * 0.04, rand(-4, 4));
+              if (Math.random() > 0.38) makeVoice(harmony, t + 0.08 + swing, 0.16 + rand(0, 0.05), rand(-6, 6));
+              if (Math.random() > 0.55) makeNoiseHit(t + 0.015, 0.06 + rand(0, 0.05));
+              if (step % 6 === 0 && Math.random() > 0.3) makeVoice(lead * 2, t + 0.135 + swing, 0.09, rand(-10, 10));
               step++;
             }
-            setTimeout(schedule, 280);
+            setTimeout(schedule, 220);
           }
           schedule();
         }
