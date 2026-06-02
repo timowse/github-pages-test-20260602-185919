@@ -3,19 +3,353 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>GitHub Pages Test</title>
+    <meta name="color-scheme" content="dark" />
+    <title>Neon Orbit · Live Pages</title>
     <style>
-      body { font-family: system-ui, sans-serif; max-width: 720px; margin: 64px auto; line-height: 1.5; padding: 0 20px; }
-      .box { padding: 24px; border: 1px solid #ddd; border-radius: 16px; }
-      h1 { margin-top: 0; }
-      code { background: #f5f5f5; padding: 0.15em 0.35em; border-radius: 6px; }
+      :root {
+        --bg1: #050816;
+        --bg2: #0b1230;
+        --card: rgba(12, 18, 42, 0.72);
+        --stroke: rgba(255, 255, 255, 0.12);
+        --text: #eef3ff;
+        --muted: #9fb0df;
+        --accent: #7c5cff;
+        --accent2: #35d3ff;
+        --good: #5df1a6;
+        --warn: #ffd36b;
+      }
+
+      html, body {
+        height: 100%;
+        margin: 0;
+        background:
+          radial-gradient(circle at 20% 20%, rgba(124, 92, 255, 0.26), transparent 26%),
+          radial-gradient(circle at 80% 20%, rgba(53, 211, 255, 0.18), transparent 22%),
+          radial-gradient(circle at 50% 80%, rgba(93, 241, 166, 0.12), transparent 24%),
+          linear-gradient(135deg, var(--bg1), var(--bg2));
+        color: var(--text);
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        overflow: hidden;
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        inset: -20%;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 15% 25%, rgba(255,255,255,0.12) 0 1px, transparent 1.6px),
+          radial-gradient(circle at 75% 15%, rgba(255,255,255,0.11) 0 1px, transparent 1.7px),
+          radial-gradient(circle at 35% 70%, rgba(255,255,255,0.10) 0 1px, transparent 1.5px),
+          radial-gradient(circle at 85% 68%, rgba(255,255,255,0.08) 0 1px, transparent 1.4px);
+        background-size: 240px 240px, 320px 320px, 280px 280px, 360px 360px;
+        animation: drift 28s linear infinite;
+        opacity: 0.45;
+      }
+
+      body::after {
+        filter: blur(4px);
+        opacity: 0.2;
+        animation-duration: 42s;
+        transform: scale(1.15);
+      }
+
+      @keyframes drift {
+        from { transform: translate3d(0,0,0) rotate(0deg); }
+        to   { transform: translate3d(-40px,20px,0) rotate(360deg); }
+      }
+
+      .wrap {
+        min-height: 100%;
+        display: grid;
+        place-items: center;
+        padding: 28px;
+      }
+
+      .card {
+        width: min(980px, 100%);
+        border: 1px solid var(--stroke);
+        background: var(--card);
+        backdrop-filter: blur(20px);
+        border-radius: 28px;
+        box-shadow: 0 24px 90px rgba(0,0,0,0.45);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .glow {
+        position: absolute;
+        inset: auto auto -120px -120px;
+        width: 280px;
+        height: 280px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(124,92,255,0.45), transparent 65%);
+        filter: blur(10px);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.4fr 0.9fr;
+        gap: 0;
+      }
+
+      .left, .right {
+        padding: 34px;
+      }
+
+      .left {
+        border-right: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        padding: 8px 14px;
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--good);
+        box-shadow: 0 0 18px var(--good);
+      }
+
+      h1 {
+        margin: 18px 0 10px;
+        font-size: clamp(2.4rem, 5vw, 5rem);
+        line-height: 0.95;
+        letter-spacing: -0.06em;
+      }
+
+      .gradient {
+        background: linear-gradient(90deg, #fff, #9db7ff 30%, #35d3ff 60%, #5df1a6);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .subtitle {
+        margin: 0;
+        max-width: 56ch;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.65;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .chip {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: var(--text);
+        font-size: 14px;
+      }
+
+      .panel {
+        display: grid;
+        gap: 16px;
+      }
+
+      .metric {
+        padding: 18px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .label {
+        color: var(--muted);
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        margin-bottom: 8px;
+      }
+
+      .value {
+        font-size: clamp(1.3rem, 2vw, 2rem);
+        font-weight: 700;
+      }
+
+      .small {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 6px;
+        line-height: 1.5;
+      }
+
+      .log {
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: rgba(0,0,0,0.2);
+        color: #d8e4ff;
+        border-left: 3px solid var(--accent2);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13px;
+        min-height: 58px;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 18px 34px 32px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .pulse {
+        animation: pulse 1s ease;
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+      }
+
+      @media (max-width: 860px) {
+        body { overflow: auto; }
+        .hero { grid-template-columns: 1fr; }
+        .left { border-right: 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+      }
     </style>
   </head>
   <body>
-    <div class="box">
-      <h1>GitHub Pages läuft</h1>
-      <p>Wenn du das hier siehst, dann funktioniert Repo-Erstellung, Push und Pages-Deployment.</p>
-      <p>Repo: <code>$REPO</code></p>
-    </div>
+    <main class="wrap">
+      <section class="card" id="card">
+        <div class="glow"></div>
+        <div class="hero">
+          <div class="left">
+            <div class="eyebrow"><span class="dot"></span> Live Pages · Auto-Refresh aktiv</div>
+            <h1 class="gradient">Neon Orbit</h1>
+            <p class="subtitle">
+              Eine kleine, lebendige GitHub-Pages-Spielwiese: animiert, cool und so gebaut,
+              dass sie neue Versionen selbst erkennt und ohne manuelles Aktualisieren nachlädt.
+            </p>
+            <div class="chips">
+              <div class="chip">✨ Glas-UI</div>
+              <div class="chip">⏱ Live-Uhr</div>
+              <div class="chip">🔁 Auto-Reload bei Deploy</div>
+              <div class="chip">🚀 GitHub Pages</div>
+            </div>
+          </div>
+
+          <div class="right">
+            <div class="panel">
+              <div class="metric">
+                <div class="label">Lokale Zeit</div>
+                <div class="value" id="clock">--:--:--</div>
+                <div class="small">Aktualisiert jede Sekunde im Browser.</div>
+              </div>
+
+              <div class="metric">
+                <div class="label">Deploy-Version</div>
+                <div class="value" id="build">lädt…</div>
+                <div class="small" id="build-meta">Prüfe, ob eine neuere Version online ist.</div>
+              </div>
+
+              <div class="log" id="log">Bereit. Ich checke automatisch alle 15 Sekunden, ob es eine neue Version gibt.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div>Repo: <span id="repo">github-pages-test-20260602-185919</span></div>
+          <div>Auto-Update: ON · Keine manuelle Aktualisierung nötig</div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const state = {
+        clock: document.getElementById('clock'),
+        build: document.getElementById('build'),
+        buildMeta: document.getElementById('build-meta'),
+        log: document.getElementById('log'),
+        card: document.getElementById('card'),
+        version: null,
+        loadedAt: Date.now(),
+      };
+
+      const messages = [
+        'Sternenstaub lädt…',
+        'Neonmotoren auf Betriebstemperatur.',
+        'Auto-Refresh hält die Seite frisch.',
+        'Browser prüft im Hintergrund neue Deploys.',
+        'Wenn sich etwas ändert, lade ich von selbst neu.',
+      ];
+
+      function pad(n) { return String(n).padStart(2, '0'); }
+
+      function updateClock() {
+        const now = new Date();
+        state.clock.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      }
+
+      function setLog(text) {
+        state.log.textContent = text;
+      }
+
+      function setVersionLabel(payload) {
+        const version = payload.version || 'unbekannt';
+        state.version = version;
+        state.build.textContent = version;
+        state.buildMeta.textContent = `Letztes Deploy: ${payload.updated || 'unbekannt'} · Prüft automatisch weiter.`;
+      }
+
+      async function checkVersion() {
+        try {
+          const res = await fetch('version.json?ts=' + Date.now(), { cache: 'no-store' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const payload = await res.json();
+
+          if (!state.version) {
+            setVersionLabel(payload);
+            setLog('Version geladen. Auto-Check läuft jetzt im Hintergrund.');
+            return;
+          }
+
+          if (payload.version !== state.version) {
+            state.card.classList.add('pulse');
+            setLog(`Neue Version entdeckt: ${payload.version}. Lade automatisch neu…`);
+            setTimeout(() => window.location.reload(), 900);
+            return;
+          }
+
+          setLog(`Alles aktuell. Nächster Check in 15 Sekunden. (${new Date().toLocaleTimeString('de-DE')})`);
+        } catch (err) {
+          setLog('Version-Check gerade nicht erreichbar — versuche es weiter automatisch.');
+        }
+      }
+
+      function rotateMessage() {
+        const msg = messages[Math.floor(Math.random() * messages.length)];
+        document.body.dataset.mood = msg;
+      }
+
+      updateClock();
+      setInterval(updateClock, 1000);
+      checkVersion();
+      setInterval(checkVersion, 15000);
+      setInterval(rotateMessage, 7000);
+    </script>
   </body>
 </html>
