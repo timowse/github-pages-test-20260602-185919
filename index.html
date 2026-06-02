@@ -69,11 +69,16 @@
       }
 
       .wrap {
-        position: relative;
-        min-height: 100%;
-        display: grid;
-        place-items: center;
-        padding: 28px;
+        display: none;
+      }
+
+      body {
+        cursor: none;
+        touch-action: none;
+      }
+
+      canvas#viz {
+        background: radial-gradient(circle at 50% 50%, rgba(124, 92, 255, 0.10), transparent 35%);
       }
 
       .card {
