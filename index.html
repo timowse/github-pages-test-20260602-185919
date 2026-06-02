@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="dark" />
-    <title>Neon Orbit · Weird Music Visualizer</title>
+    <title>Neon Orbit · KI Ambient Music</title>
     <style>
       :root {
         --bg1: #050816;
@@ -316,22 +316,22 @@
             <div class="eyebrow"><span class="dot"></span> Live Pages · Auto-Refresh aktiv</div>
             <h1 class="gradient">Neon Orbit</h1>
             <p class="subtitle">
-              Eine gläserne, seltsam schöne Synästhesie: Browser-Visuals, die auf einen
-              endlos generierten Ambient-Stream reagieren — glitchy, organisch und ein bisschen außerirdisch.
+              Eine gläserne Synästhesie: Browser-Visuals, die auf eine endlos generierte
+              KI-/Ambient-Atmosphäre reagieren — weich, lebendig und hypnotisch.
             </p>
             <div class="chips">
               <div class="chip">✨ Glas-UI</div>
               <div class="chip">🌀 Audio-Reaktiv</div>
               <div class="chip">🔁 Auto-Reload bei Deploy</div>
-              <div class="chip">🎛 Weird Synth Engine</div>
+              <div class="chip">🎛 KI Ambient Engine</div>
             </div>
             <div class="controls">
-              <button id="startBtn">Start weird mode</button>
+              <button id="startBtn">Start KI-Musik</button>
               <button id="muteBtn" class="ghost">Audio aus</button>
             </div>
             <div class="hint">
-              Hinweis: Browser blocken Autoplay meistens. Ein Klick auf „Start weird mode“ startet die
-              generative Musik und die Animationen. Danach läuft alles automatisch weiter.
+              Hinweis: Browser blocken Autoplay meistens. Ein Klick auf „Start KI-Musik“ startet die
+              generative Hintergrundmusik und die Animationen. Danach läuft alles automatisch weiter.
             </div>
           </div>
 
@@ -394,12 +394,12 @@
       };
 
       const messages = [
-        'Sternenstaub lädt…',
-        'Neonmotoren auf Betriebstemperatur.',
+        'Ambient-Schleifen laden…',
+        'KI-Hintergrundmusik auf Betriebstemperatur.',
         'Auto-Refresh hält die Seite frisch.',
         'Browser prüft im Hintergrund neue Deploys.',
         'Wenn sich etwas ändert, lade ich von selbst neu.',
-        'Die Musik denkt in Wellen und Glitches.',
+        'Die Musik denkt in Wellen und Farben.',
       ];
 
       function pad(n) { return String(n).padStart(2, '0'); }
@@ -755,7 +755,7 @@
         if (state.audio.state === 'suspended') await state.audio.resume();
         state.started = true;
         updateAudioUI(true);
-        setLog('Weird mode ist an. Der Synth läuft endlos und die Visuals atmen mit dem Klang.');
+        setLog('KI-Musik ist an. Der Synth läuft endlos und die Visuals atmen mit dem Klang.');
         setMuted(state.muted);
       }
 
