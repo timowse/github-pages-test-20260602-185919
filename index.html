@@ -171,6 +171,72 @@
         font-size: 14px;
       }
 
+      .visualizer {
+        margin-top: 22px;
+        padding: 18px 18px 16px;
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+        border: 1px solid rgba(255,255,255,0.10);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+      }
+
+      .visualizer-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        color: var(--muted);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      .visualizer-stage {
+        position: relative;
+        height: 118px;
+        display: flex;
+        align-items: flex-end;
+        gap: 6px;
+        padding: 8px 0 4px;
+        overflow: hidden;
+      }
+
+      .viz-bar {
+        flex: 1;
+        min-width: 6px;
+        border-radius: 999px 999px 4px 4px;
+        background: linear-gradient(180deg, #5df1a6, #35d3ff 45%, #7c5cff);
+        box-shadow: 0 0 16px rgba(53, 211, 255, 0.35);
+        height: 18%;
+        transform-origin: bottom center;
+        transition: height 80ms linear, transform 80ms linear, filter 80ms linear;
+      }
+
+      .viz-orb {
+        position: absolute;
+        right: 12px;
+        top: 16px;
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #fff, rgba(255,255,255,0.6) 10%, rgba(93,241,166,0.6) 25%, rgba(53,211,255,0.24) 55%, rgba(124,92,255,0.05) 75%, transparent 76%);
+        box-shadow: 0 0 35px rgba(93,241,166,0.25), 0 0 60px rgba(53,211,255,0.20);
+        opacity: 0.95;
+        pointer-events: none;
+        transform: translate3d(0,0,0) scale(1);
+        transition: transform 80ms linear, box-shadow 80ms linear, filter 80ms linear;
+      }
+
+      .chip {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: var(--text);
+        font-size: 14px;
+      }
+
       .panel {
         display: grid;
         gap: 16px;
@@ -325,6 +391,15 @@
               <div class="chip">🔁 Auto-Reload bei Deploy</div>
               <div class="chip">🎛 KI LoFi Engine</div>
             </div>
+            <div class="visualizer" id="visualizer">
+              <div class="visualizer-top">
+                <span>Audio-Visualisierung</span>
+                <span id="vizBeat">idle</span>
+              </div>
+              <div class="visualizer-stage" id="visualizerStage">
+                <div class="viz-orb" id="vizOrb"></div>
+              </div>
+            </div>
             <div class="controls">
               <button id="startBtn">Start KI-Musik</button>
               <button id="muteBtn" class="ghost">Audio aus</button>
@@ -378,6 +453,9 @@
         audioMeta: document.getElementById('audioMeta'),
         startBtn: document.getElementById('startBtn'),
         muteBtn: document.getElementById('muteBtn'),
+        visualizerStage: document.getElementById('visualizerStage'),
+        vizBeat: document.getElementById('vizBeat'),
+        vizOrb: document.getElementById('vizOrb'),
         canvas: document.getElementById('viz'),
         ctx: null,
         audio: null,
@@ -390,6 +468,7 @@
         energy: 0,
         particles: [],
         orbs: [],
+        vizBars: [],
         lastBeatAt: 0,
       };
 
@@ -480,6 +559,21 @@
         }));
       }
 
+      function setupVisualizerBars() {
+        state.visualizerStage.innerHTML = '<div class="viz-orb" id="vizOrb"></div>';
+        state.vizOrb = document.getElementById('vizOrb');
+        state.vizBars = [];
+        const count = 24;
+        for (let i = 0; i < count; i++) {
+          const bar = document.createElement('div');
+          bar.className = 'viz-bar';
+          bar.style.height = `${12 + (i % 4) * 3}%`;
+          bar.style.filter = `hue-rotate(${i * 6}deg)`;
+          state.visualizerStage.appendChild(bar);
+          state.vizBars.push(bar);
+        }
+      }
+
       function energyFromBins() {
         const b = state.bins;
         let bass = 0, mid = 0, treble = 0;
@@ -495,6 +589,36 @@
         return { bass, mid, treble, total: (bass * 0.55 + mid * 0.30 + treble * 0.15) };
       }
 
+      function updateVisualizer(energy) {
+        const bars = state.vizBars;
+        if (!bars.length) return;
+        const t = performance.now() * 0.001;
+        const bins = state.analyser ? state.bins : null;
+        for (let i = 0; i < bars.length; i++) {
+          const base = bins ? bins[Math.floor((i / bars.length) * bins.length)] / 255 : 0.12 + Math.abs(Math.sin(t * 1.5 + i * 0.45)) * 0.28;
+          const wobble = 0.12 + Math.sin(t * 2.2 + i * 0.22) * 0.08;
+          const h = Math.max(8, Math.min(100, (base * 0.78 + energy.total * 0.48 + wobble) * 100));
+          bars[i].style.height = `${h}%`;
+          bars[i].style.transform = `scaleY(${0.7 + h / 120})`;
+          bars[i].style.filter = `brightness(${0.9 + energy.total * 0.8}) saturate(${1 + energy.mid * 1.8})`;
+        }
+
+        if (state.vizOrb) {
+          const scale = 0.72 + energy.bass * 0.72 + Math.sin(t * 4) * 0.04;
+          const driftX = Math.sin(t * 0.8) * (8 + energy.mid * 18);
+          const driftY = Math.cos(t * 1.1) * (6 + energy.treble * 16);
+          state.vizOrb.style.transform = `translate(${driftX}px, ${driftY}px) scale(${scale})`;
+          state.vizOrb.style.boxShadow = `0 0 ${30 + energy.total * 55}px rgba(93,241,166,${0.18 + energy.bass * 0.28}), 0 0 ${45 + energy.mid * 70}px rgba(53,211,255,${0.14 + energy.mid * 0.18})`;
+        }
+
+        if (state.vizBeat) {
+          state.vizBeat.textContent = state.started ? 'live' : 'idle';
+        }
+        if (state.card) {
+          state.card.style.boxShadow = `0 24px 90px rgba(0,0,0,0.45), 0 0 ${18 + energy.total * 50}px rgba(53,211,255,${0.10 + energy.total * 0.15})`;
+        }
+      }
+
       function draw() {
         const ctx = state.ctx;
         if (!ctx) return;
@@ -505,8 +629,8 @@
         const energy = state.started ? energyFromBins() : { bass: 0.18, mid: 0.16, treble: 0.14, total: 0.18 };
         state.energy = state.energy * 0.88 + energy.total * 0.12;
 
+        updateVisualizer(energy);
         ctx.clearRect(0, 0, w, h);
-
         const grad = ctx.createRadialGradient(w * 0.5, h * 0.45, 30, w * 0.5, h * 0.45, Math.max(w, h) * 0.7);
         grad.addColorStop(0, `rgba(90, 150, 255, ${0.08 + energy.mid * 0.12})`);
         grad.addColorStop(0.45, `rgba(124, 92, 255, ${0.08 + energy.bass * 0.18})`);
@@ -801,6 +925,7 @@
       seedParticles();
       updateAudioUI(false);
       setMuted(false);
+      setupVisualizerBars();
       draw();
       setInterval(updateClock, 1000);
       checkVersion();
